@@ -359,13 +359,13 @@
         <tr>
           <td>Private key</td>
           <td>iOS Secure Enclave</td>
-          <td>Until app deletion</td>
+          <td>Until device erase</td>
           <td>Image decryption</td>
         </tr>
         <tr>
           <td>pull_token</td>
           <td>iOS Keychain</td>
-          <td>Until app deletion</td>
+          <td>Until device erase</td>
           <td>Authentication for fetching images from Relay</td>
         </tr>
       </tbody>
@@ -382,7 +382,7 @@
   <section>
     <h2><span class="num">05</span>Data Protection</h2>
     <p>
-      Encrypted images on the Relay are automatically deleted after 30 minutes. Channel information (channel_id, token hashes, public key, device token) is automatically deleted after 30 days. When the iOS app is uninstalled, tokens in the Keychain and the private key in the Secure Enclave are erased.
+      Encrypted images on the Relay are automatically deleted after 30 minutes. Channel information (channel_id, token hashes, public key, device token) is automatically deleted after 30 days. Tokens in the iOS Keychain and the private key in the Secure Enclave persist across app reinstallation due to iOS platform behavior. These are permanently erased when the device is erased or reset.
     </p>
     <p>
       Authentication tokens (push_token, pull_token) stored on the Relay are kept only as SHA-256 hashes. The original token values cannot be recovered from the Relay.
