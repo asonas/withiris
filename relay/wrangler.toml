@@ -6,6 +6,9 @@ routes = [
   { pattern = "relay.withiris.dev", custom_domain = true }
 ]
 
+[vars]
+APNS_ENVIRONMENT = "production"
+
 [define]
 GIT_COMMIT = '"unknown"'
 
