@@ -16,3 +16,17 @@ GIT_COMMIT = '"unknown"'
 binding = "KV"
 id = "e2e581d789d94886975f1c5d31cb2e82"
 preview_id = "e2e581d789d94886975f1c5d31cb2e82"
+
+[env.dev]
+name = "iris-relay-dev"
+routes = [
+  { pattern = "relay-dev.withiris.dev", custom_domain = true }
+]
+[env.dev.vars]
+APNS_ENVIRONMENT = "sandbox"
+[env.dev.define]
+GIT_COMMIT = '"unknown"'
+[[env.dev.kv_namespaces]]
+binding = "KV"
+id = "96e2825bd5654c3493e14c0173c58e32"
+preview_id = "96e2825bd5654c3493e14c0173c58e32"

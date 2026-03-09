@@ -33,12 +33,21 @@ uv run --with twine twine upload dist/*
 '''
 
 [tasks."deploy:relay"]
-description = "Deploy Relay to Cloudflare Workers"
+description = "Deploy Relay to Cloudflare Workers (production)"
 run = '''
 #!/usr/bin/env bash
 set -euo pipefail
 COMMIT=$(git rev-parse --short HEAD)
 cd relay && npx --yes wrangler deploy --define "GIT_COMMIT:\"${COMMIT}\""
+'''
+
+[tasks."deploy:relay-dev"]
+description = "Deploy Relay to Cloudflare Workers (dev/sandbox)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+COMMIT=$(git rev-parse --short HEAD)
+cd relay && npx --yes wrangler deploy --env dev --define "GIT_COMMIT:\"${COMMIT}\""
 '''
 
 [tasks."deploy:pages"]
