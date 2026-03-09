@@ -79,9 +79,9 @@ def poll_for_pubkey(
     raise SystemExit("Pairing timed out. Please try again.")
 
 
-def setup_interactive() -> None:
+def setup_interactive(endpoint: str | None = None) -> None:
     """Create channel, display QR, poll for pubkey, save config."""
-    endpoint = ENDPOINT
+    endpoint = endpoint or ENDPOINT
     device_name = socket.gethostname()
     response = httpx.post(f"{endpoint}/channels", json={"device_name": device_name})
     if response.status_code != 201:

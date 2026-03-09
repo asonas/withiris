@@ -41,7 +41,7 @@ def cmd_setup(args: argparse.Namespace) -> None:
         if CONFIG_PATH.exists() and not args.force:
             print("Configuration already exists. Use 'iris setup --force' to overwrite.", file=sys.stderr)
             raise SystemExit(1)
-        setup_interactive()
+        setup_interactive(endpoint=args.endpoint)
 def cmd_push(args: argparse.Namespace) -> None:
     config = load_config()
     image_path = Path(args.image)
@@ -87,6 +87,7 @@ def main() -> None:
     setup_parser = subparsers.add_parser("setup", help="Configure CLI with pairing URI or interactive setup")
     setup_parser.add_argument("uri", nargs="?", default=None, help="iris://pair?... URI (optional, omit for interactive QR setup)")
     setup_parser.add_argument("--force", action="store_true", help="Overwrite existing configuration")
+    setup_parser.add_argument("--endpoint", help="Relay endpoint URL (default: https://relay.withiris.dev)")
 
     # push command
     push_parser = subparsers.add_parser("push", help="Push an image to the relay")

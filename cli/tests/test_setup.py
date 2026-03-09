@@ -229,14 +229,14 @@ class TestCmdSetup:
             assert config["pubkey"] == "pk-1"
 
     def test_without_uri_uses_interactive_flow(self):
-        args = argparse.Namespace(uri=None, force=False)
+        args = argparse.Namespace(uri=None, force=False, endpoint=None)
         with (
             patch("iris_cli.main.CONFIG_PATH") as mock_path,
             patch("iris_cli.main.setup_interactive") as mock_interactive,
         ):
             mock_path.exists.return_value = False
             cmd_setup(args)
-            mock_interactive.assert_called_once_with()
+            mock_interactive.assert_called_once_with(endpoint=None)
 
     def test_warns_when_config_exists_without_force(self, capsys):
         args = argparse.Namespace(uri=None, force=False)
@@ -252,14 +252,14 @@ class TestCmdSetup:
         assert "--force" in captured.err
 
     def test_proceeds_with_force_when_config_exists(self):
-        args = argparse.Namespace(uri=None, force=True)
+        args = argparse.Namespace(uri=None, force=True, endpoint=None)
         with (
             patch("iris_cli.main.CONFIG_PATH") as mock_path,
             patch("iris_cli.main.setup_interactive") as mock_interactive,
         ):
             mock_path.exists.return_value = True
             cmd_setup(args)
-            mock_interactive.assert_called_once_with()
+            mock_interactive.assert_called_once_with(endpoint=None)
 
 
 class TestDisplayQr:
