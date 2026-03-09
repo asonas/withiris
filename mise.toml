@@ -1,0 +1,39 @@
+[tasks."setup"]
+description = "Set up development dependencies (relay, cli)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Installing Relay dependencies..."
+cd relay && npm install && cd ..
+
+echo "==> Installing CLI..."
+cd cli && uv tool install -e . --force && cd ..
+
+echo "==> Done!"
+'''
+
+[tasks."cli:install"]
+description = "Install iris CLI globally via uv tool"
+run = "cd cli && uv tool install -e . --force"
+
+[tasks."publish:cli"]
+description = "Build and publish CLI to PyPI"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd cli
+command rm -r dist/ 2>/dev/null || true
+uv run --with build python -m build
+uv run --with twine twine upload dist/*
+'''
+
+[tasks."deploy:relay"]
+description = "Deploy Relay to Cloudflare Workers"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+COMMIT=$(git rev-parse --short HEAD)
+cd relay && npx --yes wrangler deploy --define "GIT_COMMIT:\"${COMMIT}\""
+'''

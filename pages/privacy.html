@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - Iris</title>
+  <meta name="description" content="Privacy Policy for Iris. How the E2E encrypted screenshot delivery app handles your data.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-elevated: #f8f8fa;
+      --bg-subtle: #f0f0f3;
+      --text-primary: #1a1a1e;
+      --text-secondary: #6b6b70;
+      --text-tertiary: #9a9a9e;
+      --accent: #1a1a1e;
+      --border: #e2e2e6;
+      --border-subtle: #ededf0;
+      --mono: 'DM Mono', 'Menlo', monospace;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--sans);
+      font-weight: 400;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--text-tertiary);
+    }
+
+    nav {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    nav a {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--text-primary);
+    }
+
+    .content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 6rem 2rem 3.5rem;
+    }
+
+    .content-header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .content-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .content-header h1 {
+      font-weight: 500;
+      font-size: 1.8rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.75rem;
+    }
+
+    .content-header .updated {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+
+    .content section {
+      margin-bottom: 2rem;
+    }
+
+    .content h2 {
+      font-weight: 500;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      padding-top: 0.5rem;
+    }
+
+    .content h2 .num {
+      font-family: var(--mono);
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      margin-right: 0.5rem;
+    }
+
+    .content p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.85;
+      margin-bottom: 1rem;
+    }
+
+    .content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin: 1.25rem 0;
+    }
+
+    .data-table th {
+      font-family: var(--mono);
+      font-weight: 400;
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-elevated);
+    }
+
+    .data-table td {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      vertical-align: top;
+      line-height: 1.6;
+    }
+
+    .data-table td:first-child {
+      font-family: var(--mono);
+      color: var(--text-primary);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .highlight-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--text-primary);
+      border-radius: 0 6px 6px 0;
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .highlight-box p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .highlight-box strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    footer {
+      padding: 2.5rem 2rem;
+      max-width: 720px;
+      margin: 0 auto;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
+
+    footer nav {
+      gap: 1.5rem;
+    }
+
+    footer nav a {
+      font-size: 0.7rem;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 1rem 1.25rem;
+      }
+
+      nav {
+        gap: 1rem;
+      }
+
+      .content {
+        padding: 5rem 1.25rem 2.5rem;
+      }
+
+      .data-table {
+        font-size: 0.75rem;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo"><span>&gt;</span> iris</a>
+  <nav>
+    <a href="/">Home</a>
+    <a href="https://github.com/asonas/iris">GitHub</a>
+  </nav>
+</header>
+
+<main class="content">
+  <div class="content-header">
+    <p class="content-label">Legal</p>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: 2026-03-09</p>
+  </div>
+
+  <section>
+    <h2><span class="num">01</span>Introduction</h2>
+    <p>
+      This Privacy Policy describes how Iris ("the App") handles personal information and data. Iris is an application that delivers screenshots taken on remote servers to iOS devices using end-to-end (E2E) encryption.
+    </p>
+    <p>
+      The App is designed based on privacy-by-design principles. The relay server temporarily holds only ciphertext and has no technical means to view the contents of any image.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>E2E Encryption Design</h2>
+    <p>
+      All images sent and received through Iris are encrypted using ECIES (Elliptic Curve Integrated Encryption Scheme) based on the P-256 elliptic curve. Specifically, the system uses ECDH key exchange, HKDF-SHA256 key derivation, and AES-256-GCM authenticated encryption.
+    </p>
+    <div class="highlight-box">
+      <p>
+        <strong>The decryption key (private key) exists only in the iPhone's Secure Enclave.</strong>
+        This key cannot be exported from the device. The Relay operator, Cloudflare, and any other third party have no means of accessing image contents.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Data We Process</h2>
+    <p>
+      The following data is processed by the App and the Relay server.
+    </p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Storage</th>
+          <th>Retention</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Encrypted images</td>
+          <td>Relay (KV)</td>
+          <td>30 minutes</td>
+          <td>Delivery to iOS app</td>
+        </tr>
+        <tr>
+          <td>channel_id</td>
+          <td>Relay (KV)</td>
+          <td>30 days</td>
+          <td>Routing identifier</td>
+        </tr>
+        <tr>
+          <td>push_token hash</td>
+          <td>Relay (KV)</td>
+          <td>30 days</td>
+          <td>CLI authentication (hash only)</td>
+        </tr>
+        <tr>
+          <td>pull_token hash</td>
+          <td>Relay (KV)</td>
+          <td>30 days</td>
+          <td>iOS authentication (hash only)</td>
+        </tr>
+        <tr>
+          <td>public_key</td>
+          <td>Relay (KV)</td>
+          <td>30 days</td>
+          <td>Public key used by CLI for encryption</td>
+        </tr>
+        <tr>
+          <td>APNs device token</td>
+          <td>Relay (KV)</td>
+          <td>30 days</td>
+          <td>Push notification destination</td>
+        </tr>
+        <tr>
+          <td>device_name</td>
+          <td>Relay (KV)</td>
+          <td>30 days</td>
+          <td>Channel display label</td>
+        </tr>
+        <tr>
+          <td>Private key</td>
+          <td>iOS Secure Enclave</td>
+          <td>Until app deletion</td>
+          <td>Image decryption</td>
+        </tr>
+        <tr>
+          <td>pull_token</td>
+          <td>iOS Keychain</td>
+          <td>Until app deletion</td>
+          <td>Authentication for fetching images from Relay</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>Data We Do Not Collect</h2>
+    <p>
+      The App does not collect any personally identifiable information such as names, email addresses, or phone numbers. There is no account registration or login functionality. The App does not access location data, contacts, calendars, photo libraries, or any other iOS system data. No usage analytics or crash reports are sent to external services. There is no advertising tracking or data sharing with third parties.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Data Protection</h2>
+    <p>
+      Encrypted images on the Relay are automatically deleted after 30 minutes. Channel information (channel_id, token hashes, public key, device token) is automatically deleted after 30 days. When the iOS app is uninstalled, tokens in the Keychain and the private key in the Secure Enclave are erased.
+    </p>
+    <p>
+      Authentication tokens (push_token, pull_token) stored on the Relay are kept only as SHA-256 hashes. The original token values cannot be recovered from the Relay.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>Third-Party Services</h2>
+    <p>
+      The App uses the following third-party services.
+    </p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Provider</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Workers / KV</td>
+          <td>Cloudflare</td>
+          <td>Relay server hosting and data storage</td>
+        </tr>
+        <tr>
+          <td>APNs</td>
+          <td>Apple</td>
+          <td>Push notification delivery to iOS devices</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      All data stored in Cloudflare Workers and KV is either encrypted or hashed. Cloudflare cannot access image contents. Only notification payloads (image ID and channel ID) are sent to APNs; no image data is included.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Children's Privacy</h2>
+    <p>
+      The App is a developer tool and is not intended for children under the age of 13. We do not knowingly collect personal information from children under 13.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Changes to This Policy</h2>
+    <p>
+      This Privacy Policy may be updated from time to time. Any significant changes will be indicated by updating the "Last updated" date at the top of this page.
+    </p>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Contact</h2>
+    <p>
+      If you have any questions about this Privacy Policy, please reach out through the GitHub repository's Issues.
+    </p>
+    <p>
+      <a href="https://github.com/asonas/iris/issues" style="color: var(--text-primary); font-family: var(--mono); font-size: 0.85rem;">github.com/asonas/iris/issues</a>
+    </p>
+  </section>
+</main>
+
+<footer>
+  <p>Iris - E2E Encrypted Screenshot Delivery</p>
+  <nav>
+    <a href="/">Home</a>
+    <a href="https://github.com/asonas/iris">GitHub</a>
+  </nav>
+</footer>
+
+</body>
+</html>

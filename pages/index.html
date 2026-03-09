@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iris - E2E Encrypted Screenshot Delivery</title>
+  <meta name="description" content="Deliver screenshots from remote servers to your iPhone with E2E encryption. The relay server holds only ciphertext and cannot view image contents.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-elevated: #f8f8fa;
+      --bg-subtle: #f0f0f3;
+      --text-primary: #1a1a1e;
+      --text-secondary: #6b6b70;
+      --text-tertiary: #9a9a9e;
+      --accent: #1a1a1e;
+      --accent-hover: #333338;
+      --border: #e2e2e6;
+      --border-subtle: #ededf0;
+      --mono: 'DM Mono', 'Menlo', monospace;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--sans);
+      font-weight: 400;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* --- Header --- */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--text-tertiary);
+    }
+
+    nav {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    nav a {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+
+    nav a:hover {
+      color: var(--text-primary);
+    }
+
+    /* --- Hero --- */
+    .hero {
+      min-height: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 7rem 2rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease-out 0.2s forwards;
+    }
+
+    .hero h1 {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+      max-width: 800px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease-out 0.4s forwards;
+    }
+
+    .hero-description {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease-out 0.6s forwards;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.6s ease-out 0.8s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.7rem 1.5rem;
+      border-radius: 6px;
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      padding: 0.7rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-primary);
+      border-color: var(--text-tertiary);
+    }
+
+    /* --- Terminal Demo --- */
+    .terminal-section {
+      padding: 1.5rem 2rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .terminal {
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      border-radius: 10px;
+      overflow: hidden;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.7;
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.75rem 1rem;
+      background: #222226;
+      border-bottom: 1px solid #2a2a2e;
+    }
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3a3a3e;
+    }
+
+    .terminal-title {
+      margin-left: 0.5rem;
+      color: #6a6a6e;
+      font-size: 0.7rem;
+    }
+
+    .terminal-body {
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+    }
+
+    .terminal-line {
+      white-space: pre;
+      opacity: 0;
+      animation: terminalReveal 0.3s ease-out forwards;
+    }
+
+    .terminal-line .prompt {
+      color: #7ec945;
+    }
+
+    .terminal-line .cmd {
+      color: #e8e6e3;
+    }
+
+    .terminal-line .output {
+      color: #8a8a8e;
+    }
+
+    .terminal-line .dim {
+      color: #5a5a5e;
+    }
+
+    .terminal-line:nth-child(1) { animation-delay: 1.0s; }
+    .terminal-line:nth-child(2) { animation-delay: 1.3s; }
+    .terminal-line:nth-child(3) { animation-delay: 1.6s; }
+    .terminal-line:nth-child(4) { animation-delay: 1.9s; }
+    .terminal-line:nth-child(5) { animation-delay: 2.2s; }
+    .terminal-line:nth-child(6) { animation-delay: 2.5s; }
+    .terminal-line:nth-child(7) { animation-delay: 2.8s; }
+
+    /* --- Sections --- */
+    .section {
+      padding: 3.5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .section h2 {
+      font-weight: 500;
+      font-size: 1.6rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 2rem;
+      max-width: 500px;
+    }
+
+    /* --- Architecture Flow --- */
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 0;
+      align-items: start;
+      margin-bottom: 2.5rem;
+    }
+
+    .flow-node {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .flow-node-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .flow-node-title {
+      font-weight: 500;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .flow-node-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .flow-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 1.25rem;
+      color: var(--text-tertiary);
+      font-family: var(--mono);
+      font-size: 1.2rem;
+    }
+
+    /* --- Features grid --- */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .feature {
+      background: var(--bg);
+      padding: 1.5rem;
+    }
+
+    .feature-icon {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      margin-bottom: 0.65rem;
+      padding: 0.35rem 0.65rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .feature h3 {
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .feature p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* --- Crypto detail --- */
+    .crypto-detail {
+      margin-top: 2.5rem;
+      max-width: 640px;
+    }
+
+    .crypto-prose h3 {
+      font-weight: 500;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .crypto-prose p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+
+    /* --- Use case --- */
+    .use-case {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .use-case-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem;
+    }
+
+    .use-case-item h4 {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .use-case-item p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* --- Install section --- */
+    .install {
+      padding: 3.5rem 2rem 2.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .install-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .install-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .install-card-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.65rem;
+    }
+
+    .install-cmd {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      background: var(--bg);
+      padding: 0.55rem 0.85rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      margin-bottom: 0.65rem;
+    }
+
+    .install-card p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* --- Footer --- */
+    footer {
+      padding: 2.5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+    }
+
+    footer nav {
+      gap: 1.5rem;
+    }
+
+    footer nav a {
+      font-size: 0.7rem;
+    }
+
+    /* --- Animations --- */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes terminalReveal {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      header {
+        padding: 1rem 1.25rem;
+      }
+
+      nav {
+        gap: 1rem;
+      }
+
+      .hero {
+        padding: 5.5rem 1.25rem 2.5rem;
+      }
+
+      .terminal-section {
+        padding: 1rem 1.25rem 2rem;
+      }
+
+      .section {
+        padding: 2.5rem 1.25rem;
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .flow-arrow {
+        padding: 0.5rem 0;
+        transform: rotate(90deg);
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      .crypto-detail {
+        grid-template-columns: 1fr;
+      }
+
+      .use-case-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .install-grid {
+        grid-template-columns: 1fr;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo"><span>&gt;</span> iris</a>
+  <nav>
+    <a href="https://github.com/asonas/iris">GitHub</a>
+    <a href="/privacy.html">Privacy</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <p class="hero-eyebrow">End-to-End Encrypted Screenshot Delivery</p>
+  <h1>
+    Deliver remote screenshots<br>
+    to your iPhone, encrypted.
+  </h1>
+  <p class="hero-description">
+    Screenshots captured by Claude Code or Playwright on remote servers, delivered to your iPhone with E2E encryption. The relay server holds only ciphertext. Check results on the go.
+  </p>
+  <div class="hero-actions">
+    <a href="#install" class="btn-primary">Get Started</a>
+    <a href="https://github.com/asonas/iris" class="btn-secondary">Source Code</a>
+  </div>
+</section>
+
+<!-- Terminal Demo -->
+<section class="terminal-section">
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <span class="terminal-title">Terminal</span>
+    </div>
+    <div class="terminal-body">
+      <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">pip install withiris</span></div>
+      <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">iris setup</span></div>
+      <div class="terminal-line"><span class="output">Channel created. Scan this QR code with the Iris iOS app:</span></div>
+      <div class="terminal-line"><span class="dim">  [QR code displayed]</span></div>
+      <div class="terminal-line"><span class="output">Waiting for device registration... done.</span></div>
+      <div class="terminal-line"><span class="prompt">$ </span><span class="cmd">iris push screenshot.png</span></div>
+      <div class="terminal-line"><span class="output">Encrypted and pushed. (P-256 ECIES, 142KB)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Install -->
+<section id="install" class="install">
+  <p class="section-label">Getting Started</p>
+  <h2>Getting Started</h2>
+  <div class="install-grid">
+    <div class="install-card">
+      <p class="install-card-label">1. iOS App</p>
+      <div class="install-cmd">Download from the App Store</div>
+      <p>Install the Iris app on your iPhone. Requires iOS 26.0 or later.</p>
+    </div>
+    <div class="install-card">
+      <p class="install-card-label">2. CLI Tool</p>
+      <div class="install-cmd">$ pip install withiris</div>
+      <p>Install the CLI on the server that will send screenshots. Requires Python 3.11 or later.</p>
+    </div>
+    <div class="install-card">
+      <p class="install-card-label">3. Pairing</p>
+      <div class="install-cmd">$ iris setup</div>
+      <p>Scan the displayed QR code with the iOS app. Key exchange happens automatically and encrypted communication is ready.</p>
+    </div>
+    <div class="install-card">
+      <p class="install-card-label">4. Send</p>
+      <div class="install-cmd">$ iris push screenshot.png</div>
+      <p>The image is encrypted with the public key and delivered to your iPhone via the Relay. Arrives instantly via push notification.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section id="architecture" class="section">
+  <p class="section-label">Architecture</p>
+  <h2>Zero-trust, three-party design</h2>
+
+  <div class="flow">
+    <div class="flow-node">
+      <p class="flow-node-label">CLI</p>
+      <p class="flow-node-title">Sender</p>
+      <p class="flow-node-desc">Runs on your server. Encrypts images with the public key and sends them to the Relay. Written in Python.</p>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <p class="flow-node-label">Relay</p>
+      <p class="flow-node-title">Relay Server</p>
+      <p class="flow-node-desc">Runs on Cloudflare Workers. Temporarily stores ciphertext but holds no decryption key and cannot view contents.</p>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node">
+      <p class="flow-node-label">iOS App</p>
+      <p class="flow-node-title">Receiver</p>
+      <p class="flow-node-desc">Decrypts with the Secure Enclave private key. The key never leaves the device. Receives via push notification.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="section">
+  <p class="section-label">Features</p>
+
+  <div class="features">
+    <div class="feature">
+      <span class="feature-icon">P-256 ECIES</span>
+      <h3>E2E Encryption</h3>
+      <p>ECDH key exchange, HKDF-SHA256 key derivation, and AES-256-GCM authenticated encryption. No third party, including the relay server, can decrypt images.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">Secure Enclave</span>
+      <h3>Hardware Key Storage</h3>
+      <p>The private key is generated and stored in the iPhone's Secure Enclave. It cannot be exported, even by the OS, and never leaves the device.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">QR Pairing</span>
+      <h3>One-Step Setup</h3>
+      <p>Scan the QR code displayed by the CLI with the iOS app to complete pairing. Key exchange happens automatically.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">APNs</span>
+      <h3>Real-Time Delivery</h3>
+      <p>When an image arrives at the Relay, the iOS app is notified instantly via Apple Push Notification. Works in the background.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">Multi-Channel</span>
+      <h3>Multiple Servers</h3>
+      <p>Receive images from multiple CLI environments on a single iPhone. Each channel is isolated with independent encryption keys.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-icon">TTL: 30min</span>
+      <h3>Auto-Delete</h3>
+      <p>Encrypted images on the Relay are automatically deleted after 30 minutes. Channel info is retained for 30 days. No long-term data accumulation.</p>
+    </div>
+  </div>
+
+  <!-- Crypto detail -->
+  <div class="crypto-detail">
+    <div class="crypto-prose">
+      <h3>Encryption Details</h3>
+      <p>
+        Iris uses ECIES (Elliptic Curve Integrated Encryption Scheme) based on the P-256 elliptic curve. An ephemeral key pair is generated for each transmission, and the encryption key is derived from the ECDH shared secret with the recipient's public key via HKDF-SHA256. Image data is encrypted with AES-256-GCM, which includes tamper detection.
+      </p>
+      <p>
+        The Relay holds only ciphertext. Neither the shared secret nor the encryption key exists on the Relay. There is no way for the Relay operator, Cloudflare, or any third party to access image contents.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Use cases -->
+<section class="section">
+  <p class="section-label">Use Cases</p>
+  <h2>Built for these workflows</h2>
+  <div class="use-case">
+    <div class="use-case-grid">
+      <div class="use-case-item">
+        <h4>Claude Code / AI Agent</h4>
+        <p>An AI agent operates a browser on a remote server and captures screenshots. View the results instantly on your iPhone while on the move. No SSH or VPN required.</p>
+      </div>
+      <div class="use-case-item">
+        <h4>Playwright / E2E Tests</h4>
+        <p>Deliver E2E test screenshots from your CI/CD pipeline to your iPhone as soon as tests complete. Triage failures from the palm of your hand.</p>
+      </div>
+      <div class="use-case-item">
+        <h4>Remote Dev Servers</h4>
+        <p>View screenshots from your home Linux server or cloud VM on your iPhone while away. Images are encrypted, so even public Wi-Fi is safe.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>Iris - E2E Encrypted Screenshot Delivery</p>
+  <nav>
+    <a href="https://github.com/asonas/iris">GitHub</a>
+    <a href="/privacy.html">Privacy Policy</a>
+  </nav>
+</footer>
+
+</body>
+</html>

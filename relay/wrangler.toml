@@ -1,0 +1,15 @@
+name = "iris-relay"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+routes = [
+  { pattern = "relay.withiris.dev", custom_domain = true }
+]
+
+[define]
+GIT_COMMIT = '"unknown"'
+
+[[kv_namespaces]]
+binding = "KV"
+id = "e2e581d789d94886975f1c5d31cb2e82"
+preview_id = "e2e581d789d94886975f1c5d31cb2e82"

@@ -1,0 +1,23 @@
+# Node.js
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Cloudflare Workers
+.wrangler/
+.dev.vars
+
+# IDE
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Secrets
+*.p8
+.env
