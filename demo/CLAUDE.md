@@ -78,3 +78,11 @@ iris status
 ```bash
 npx --yes serve demo/
 ```
+
+### Taking Screenshots
+
+Use Playwright with a 1180x800 viewport (no `--full-page`). This captures only the first view:
+
+```bash
+npx --yes playwright screenshot --viewport-size="1180,800" demo/index.html demo/screenshot.png
+```
