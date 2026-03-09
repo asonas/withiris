@@ -7,6 +7,9 @@ set -euo pipefail
 echo "==> Installing Relay dependencies..."
 cd relay && npm install && cd ..
 
+echo "==> Installing Pages dependencies..."
+cd pages && npm install --ignore-scripts && cd ..
+
 echo "==> Installing CLI..."
 cd cli && uv tool install -e . --force && cd ..
 
@@ -37,3 +40,7 @@ set -euo pipefail
 COMMIT=$(git rev-parse --short HEAD)
 cd relay && npx --yes wrangler deploy --define "GIT_COMMIT:\"${COMMIT}\""
 '''
+
+[tasks."deploy:pages"]
+description = "Deploy landing pages to Cloudflare Pages"
+run = "cd pages && npx --yes wrangler pages deploy . --project-name=withiris --branch=main"
