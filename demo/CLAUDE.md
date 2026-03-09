@@ -1,5 +1,7 @@
 # Demo Directory
 
+Always respond in English.
+
 This directory contains the demo landing page for Iris CLI.
 
 ## Iris CLI Command Reference
