@@ -69,7 +69,7 @@ Each machine needs its own setup. Run `iris setup` on every machine you want to 
 
 ## Links
 
-- [GitHub](https://github.com/asonas/iris)
+- [GitHub](https://github.com/asonas/withiris)
 - [iOS App (App Store)](https://apps.apple.com/app/iris/TODO)
 
 ## License

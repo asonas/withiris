@@ -15,8 +15,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/asonas/iris"
-Repository = "https://github.com/asonas/iris"
+Homepage = "https://github.com/asonas/withiris"
+Repository = "https://github.com/asonas/withiris"
 
 [project.scripts]
 iris = "iris_cli.main:main"
