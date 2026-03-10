@@ -8,6 +8,7 @@ routes = [
 
 [vars]
 APNS_ENVIRONMENT = "production"
+APNS_TOPIC = "com.asonas.iris"
 
 [define]
 GIT_COMMIT = '"unknown"'
@@ -24,6 +25,7 @@ routes = [
 ]
 [env.dev.vars]
 APNS_ENVIRONMENT = "sandbox"
+APNS_TOPIC = "com.asonas.iris.debug"
 [env.dev.define]
 GIT_COMMIT = '"unknown"'
 [[env.dev.kv_namespaces]]

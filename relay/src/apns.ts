@@ -43,7 +43,7 @@ async function generateJwt(config: ApnsConfig): Promise<string> {
 }
 
 export async function sendPushNotification(
-  env: { APNS_KEY?: string; APNS_KEY_ID?: string; APNS_TEAM_ID?: string; APNS_ENVIRONMENT?: string },
+  env: { APNS_KEY?: string; APNS_KEY_ID?: string; APNS_TEAM_ID?: string; APNS_ENVIRONMENT?: string; APNS_TOPIC?: string },
   deviceToken: string,
   channelId: string,
   imageId: string,
@@ -69,7 +69,7 @@ export async function sendPushNotification(
       method: "POST",
       headers: {
         authorization: `bearer ${jwt}`,
-        "apns-topic": "com.asonas.iris",
+        "apns-topic": env.APNS_TOPIC ?? "com.asonas.iris",
         "apns-push-type": "alert",
         "content-type": "application/json",
       },
