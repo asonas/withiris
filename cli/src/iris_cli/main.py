@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from .config import CONFIG_PATH, add_channel, find_channel, get_channels, load_config, new_config, parse_pair_uri, save_config
+from .config import CONFIG_PATH, add_channel, find_channel, get_channels, load_config, new_config, parse_pair_uri, remove_channel, save_config
 from .crypto import build_payload, encrypt, load_public_key
 from .setup import setup_interactive
 
@@ -100,6 +100,15 @@ def cmd_push(args: argparse.Namespace) -> None:
         else:
             print(f"Error: {response.status_code} ({ch.get('device_name', ch['channel_id'])})", file=sys.stderr)
             print(response.text, file=sys.stderr)
+
+def cmd_remove(args: argparse.Namespace) -> None:
+    config = load_config()
+    if remove_channel(config, args.query):
+        save_config(config)
+        print(f"Removed channel matching '{args.query}'")
+    else:
+        print(f"No channel matching '{args.query}'", file=sys.stderr)
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="iris", description="Iris CLI client")
     subparsers = parser.add_subparsers(dest="command")
@@ -119,6 +128,10 @@ def main() -> None:
     push_parser.add_argument("--title", help="Optional title for the image")
     push_parser.add_argument("--channel", help="Send to specific channel (channel_id prefix or device_name)")
 
+    # remove command
+    remove_parser = subparsers.add_parser("remove", help="Remove a channel")
+    remove_parser.add_argument("query", help="Channel ID prefix or device name to remove")
+
     args = parser.parse_args()
 
     if args.command is None or args.command == "status":
@@ -127,5 +140,7 @@ def main() -> None:
         cmd_setup(args)
     elif args.command == "push":
         cmd_push(args)
+    elif args.command == "remove":
+        cmd_remove(args)
 if __name__ == "__main__":
     main()

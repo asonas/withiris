@@ -11,6 +11,7 @@ from iris_cli.config import (
     load_config,
     migrate_v1_to_v2,
     new_config,
+    remove_channel,
 )
 
 
@@ -188,3 +189,42 @@ class TestFindChannel:
     def test_finds_by_exact_channel_id(self):
         result = find_channel(self.config, "abc-123-def")
         assert result["channel_id"] == "abc-123-def"
+
+
+class TestRemoveChannel:
+    def test_removes_by_channel_id(self):
+        config = {
+            "version": 2,
+            "channels": [
+                {"channel_id": "ch-1", "device_name": "phone1"},
+                {"channel_id": "ch-2", "device_name": "phone2"},
+            ],
+        }
+        removed = remove_channel(config, "ch-1")
+        assert removed is True
+        assert len(config["channels"]) == 1
+        assert config["channels"][0]["channel_id"] == "ch-2"
+
+    def test_removes_by_device_name(self):
+        config = {
+            "version": 2,
+            "channels": [
+                {"channel_id": "ch-1", "device_name": "iPhone Production"},
+                {"channel_id": "ch-2", "device_name": "iPhone Dev"},
+            ],
+        }
+        removed = remove_channel(config, "Dev")
+        assert removed is True
+        assert len(config["channels"]) == 1
+        assert config["channels"][0]["channel_id"] == "ch-1"
+
+    def test_returns_false_when_not_found(self):
+        config = {
+            "version": 2,
+            "channels": [
+                {"channel_id": "ch-1", "device_name": "phone1"},
+            ],
+        }
+        removed = remove_channel(config, "nonexistent")
+        assert removed is False
+        assert len(config["channels"]) == 1

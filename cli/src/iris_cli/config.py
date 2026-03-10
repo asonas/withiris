@@ -40,6 +40,15 @@ def add_channel(config: dict, channel: dict) -> dict:
     return config
 
 
+def remove_channel(config: dict, query: str) -> bool:
+    """Remove a channel matching query. Returns True if removed."""
+    channel = find_channel(config, query)
+    if channel is None:
+        return False
+    config["channels"].remove(channel)
+    return True
+
+
 def find_channel(config: dict, query: str) -> dict | None:
     """Find a channel by channel_id prefix or device_name substring."""
     for ch in config["channels"]:
