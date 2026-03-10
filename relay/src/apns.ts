@@ -62,6 +62,9 @@ export async function sendPushNotification(
   const host =
     config.environment === "production" ? "api.push.apple.com" : "api.sandbox.push.apple.com";
 
+  const topic = env.APNS_TOPIC ?? "com.asonas.iris";
+  console.log(`APNs request: host=${host} topic=${topic} token=${deviceToken.substring(0, 8)}...`);
+
   try {
     const jwt = await generateJwt(config);
 
@@ -69,7 +72,7 @@ export async function sendPushNotification(
       method: "POST",
       headers: {
         authorization: `bearer ${jwt}`,
-        "apns-topic": env.APNS_TOPIC ?? "com.asonas.iris",
+        "apns-topic": topic,
         "apns-push-type": "alert",
         "content-type": "application/json",
       },
