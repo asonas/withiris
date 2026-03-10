@@ -143,9 +143,11 @@ class TestSetupInteractive:
             assert "/channels" in mock_post.call_args[0][0]
             mock_save.assert_called_once()
             config = mock_save.call_args[0][0]
-            assert config["channel_id"] == "ch-123"
-            assert config["push_token"] == "push-tok"
-            assert config["pubkey"] == "test-pubkey"
+            assert config["version"] == 2
+            assert len(config["channels"]) == 1
+            assert config["channels"][0]["channel_id"] == "ch-123"
+            assert config["channels"][0]["push_token"] == "push-tok"
+            assert config["channels"][0]["pubkey"] == "test-pubkey"
 
     def test_sends_device_name_to_relay(self):
         create_response = httpx.Response(201, json={
@@ -203,7 +205,39 @@ class TestSetupInteractive:
             setup_interactive()
 
             config = mock_save.call_args[0][0]
-            assert config["device_name"] == "my-laptop"
+            assert config["channels"][0]["device_name"] == "my-laptop"
+
+    def test_appends_to_existing_config(self):
+        existing = {
+            "version": 2,
+            "channels": [
+                {
+                    "endpoint": "https://relay.example.com",
+                    "channel_id": "ch-existing",
+                    "push_token": "push-existing",
+                    "pubkey": "pubkey-existing",
+                    "device_name": "old-device",
+                }
+            ],
+        }
+        create_response = httpx.Response(201, json={
+            "channel_id": "ch-new",
+            "push_token": "push-new",
+            "pull_token": "pull-new",
+        })
+
+        with (
+            patch("iris_cli.setup.httpx.post", return_value=create_response),
+            patch("iris_cli.setup.poll_for_pubkey", return_value="new-pubkey"),
+            patch("iris_cli.setup.save_config") as mock_save,
+            patch("iris_cli.setup.display_qr"),
+        ):
+            setup_interactive(existing_config=existing)
+
+            config = mock_save.call_args[0][0]
+            assert len(config["channels"]) == 2
+            assert config["channels"][0]["channel_id"] == "ch-existing"
+            assert config["channels"][1]["channel_id"] == "ch-new"
 
     def test_raises_on_channel_creation_failure(self):
         error_response = httpx.Response(500, json={"detail": "Internal error"})
@@ -216,17 +250,44 @@ class TestSetupInteractive:
 
 
 class TestCmdSetup:
-    def test_with_uri_uses_legacy_flow(self):
+    def test_with_uri_saves_as_v2(self):
         args = argparse.Namespace(
             uri="iris://pair?endpoint=https%3A%2F%2Frelay.example.com&channel_id=ch-1&push_token=pt-1&pubkey=pk-1",
             force=False,
         )
-        with patch("iris_cli.main.save_config") as mock_save:
+        with (
+            patch("iris_cli.main.CONFIG_PATH") as mock_path,
+            patch("iris_cli.main.save_config") as mock_save,
+        ):
+            mock_path.exists.return_value = False
             cmd_setup(args)
             mock_save.assert_called_once()
             config = mock_save.call_args[0][0]
-            assert config["endpoint"] == "https://relay.example.com"
-            assert config["pubkey"] == "pk-1"
+            assert config["version"] == 2
+            assert len(config["channels"]) == 1
+            assert config["channels"][0]["endpoint"] == "https://relay.example.com"
+            assert config["channels"][0]["pubkey"] == "pk-1"
+
+    def test_with_uri_appends_to_existing(self):
+        args = argparse.Namespace(
+            uri="iris://pair?endpoint=https%3A%2F%2Frelay.example.com&channel_id=ch-new&push_token=pt-new&pubkey=pk-new",
+            force=False,
+        )
+        existing = {
+            "version": 2,
+            "channels": [{"channel_id": "ch-old", "endpoint": "https://old.example.com",
+                          "push_token": "pt-old", "pubkey": "pk-old", "device_name": "old"}],
+        }
+        with (
+            patch("iris_cli.main.CONFIG_PATH") as mock_path,
+            patch("iris_cli.main.load_config", return_value=existing),
+            patch("iris_cli.main.save_config") as mock_save,
+        ):
+            mock_path.exists.return_value = True
+            cmd_setup(args)
+            config = mock_save.call_args[0][0]
+            assert len(config["channels"]) == 2
+            assert config["channels"][1]["channel_id"] == "ch-new"
 
     def test_without_uri_uses_interactive_flow(self):
         args = argparse.Namespace(uri=None, force=False, endpoint=None)
@@ -238,20 +299,24 @@ class TestCmdSetup:
             cmd_setup(args)
             mock_interactive.assert_called_once_with(endpoint=None)
 
-    def test_warns_when_config_exists_without_force(self, capsys):
-        args = argparse.Namespace(uri=None, force=False)
+    def test_appends_channel_when_config_exists(self):
+        existing_config = {
+            "version": 2,
+            "channels": [{"channel_id": "ch-old"}],
+        }
+        args = argparse.Namespace(uri=None, force=False, endpoint=None)
         with (
             patch("iris_cli.main.CONFIG_PATH") as mock_path,
-            patch("iris_cli.main.setup_interactive"),
+            patch("iris_cli.main.load_config", return_value=existing_config),
+            patch("iris_cli.main.setup_interactive") as mock_interactive,
         ):
             mock_path.exists.return_value = True
-            with pytest.raises(SystemExit):
-                cmd_setup(args)
+            cmd_setup(args)
+            mock_interactive.assert_called_once_with(
+                endpoint=None, existing_config=existing_config,
+            )
 
-        captured = capsys.readouterr()
-        assert "--force" in captured.err
-
-    def test_proceeds_with_force_when_config_exists(self):
+    def test_force_creates_fresh_config(self):
         args = argparse.Namespace(uri=None, force=True, endpoint=None)
         with (
             patch("iris_cli.main.CONFIG_PATH") as mock_path,

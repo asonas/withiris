@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from .config import CONFIG_PATH, load_config, parse_pair_uri, save_config
+from .config import CONFIG_PATH, add_channel, find_channel, get_channels, load_config, new_config, parse_pair_uri, save_config
 from .crypto import build_payload, encrypt, load_public_key
 from .setup import setup_interactive
 
@@ -21,27 +21,41 @@ def cmd_status() -> None:
         return
 
     config = load_config()
-    endpoint = config.get("endpoint", "unknown")
-    channel_id = config.get("channel_id", "unknown")
-    device_name = config.get("device_name")
-    host = urlparse(endpoint).hostname or endpoint
-    print(f"Paired")
-    print(f"  relay:      {host}")
-    print(f"  channel_id: {channel_id}")
-    if device_name:
-        print(f"  device:     {device_name}")
+    channels = get_channels(config)
+
+    if not channels:
+        print("Not paired. Run 'iris setup' to add a channel.")
+        return
+
+    print(f"{len(channels)} channel(s) configured:")
+    for ch in channels:
+        endpoint = ch.get("endpoint", "unknown")
+        channel_id = ch.get("channel_id", "unknown")
+        device_name = ch.get("device_name")
+        host = urlparse(endpoint).hostname or endpoint
+        print()
+        print(f"  relay:      {host}")
+        print(f"  channel_id: {channel_id}")
+        if device_name:
+            print(f"  device:     {device_name}")
 def cmd_setup(args: argparse.Namespace) -> None:
     if args.uri:
-        config = parse_pair_uri(args.uri)
+        channel = parse_pair_uri(args.uri)
+        if CONFIG_PATH.exists():
+            config = load_config()
+        else:
+            config = new_config()
+        add_channel(config, channel)
         save_config(config)
         print(f"Configuration saved to ~/.config/iris/config.json")
-        print(f"  endpoint:   {config['endpoint']}")
-        print(f"  channel_id: {config['channel_id']}")
+        print(f"  endpoint:   {channel['endpoint']}")
+        print(f"  channel_id: {channel['channel_id']}")
     else:
         if CONFIG_PATH.exists() and not args.force:
-            print("Configuration already exists. Use 'iris setup --force' to overwrite.", file=sys.stderr)
-            raise SystemExit(1)
-        setup_interactive(endpoint=args.endpoint)
+            existing_config = load_config()
+            setup_interactive(endpoint=args.endpoint, existing_config=existing_config)
+        else:
+            setup_interactive(endpoint=args.endpoint)
 def cmd_push(args: argparse.Namespace) -> None:
     config = load_config()
     image_path = Path(args.image)
@@ -53,29 +67,39 @@ def cmd_push(args: argparse.Namespace) -> None:
     content_type = mimetypes.guess_type(str(image_path))[0] or "application/octet-stream"
     title = args.title if args.title else image_path.name
 
-    # Build and encrypt payload
-    pubkey = load_public_key(config["pubkey"])
-    plaintext = build_payload(image_bytes, title=title, content_type=content_type)
-    encrypted = encrypt(plaintext, pubkey)
-
-    # POST to relay
-    url = f"{config['endpoint']}/channels/{config['channel_id']}/images"
-    response = httpx.post(
-        url,
-        content=encrypted,
-        headers={
-            "Authorization": f"Bearer {config['push_token']}",
-            "Content-Type": "application/octet-stream",
-        },
-    )
-
-    if response.status_code == 201:
-        data = response.json()
-        print(f"Image pushed successfully: {data['id']}")
+    channel_query = getattr(args, "channel", None)
+    if channel_query:
+        matched = find_channel(config, channel_query)
+        if not matched:
+            raise SystemExit(f"No channel matching '{channel_query}'")
+        channels = [matched]
     else:
-        print(f"Error: {response.status_code}", file=sys.stderr)
-        print(response.text, file=sys.stderr)
-        raise SystemExit(1)
+        channels = get_channels(config)
+
+    if not channels:
+        raise SystemExit("No channels configured. Run 'iris setup' first.")
+
+    for ch in channels:
+        pubkey = load_public_key(ch["pubkey"])
+        plaintext = build_payload(image_bytes, title=title, content_type=content_type)
+        encrypted = encrypt(plaintext, pubkey)
+
+        url = f"{ch['endpoint']}/channels/{ch['channel_id']}/images"
+        response = httpx.post(
+            url,
+            content=encrypted,
+            headers={
+                "Authorization": f"Bearer {ch['push_token']}",
+                "Content-Type": "application/octet-stream",
+            },
+        )
+
+        if response.status_code == 201:
+            data = response.json()
+            print(f"Image pushed successfully: {data['id']}")
+        else:
+            print(f"Error: {response.status_code} ({ch.get('device_name', ch['channel_id'])})", file=sys.stderr)
+            print(response.text, file=sys.stderr)
 def main() -> None:
     parser = argparse.ArgumentParser(prog="iris", description="Iris CLI client")
     subparsers = parser.add_subparsers(dest="command")
@@ -93,6 +117,7 @@ def main() -> None:
     push_parser = subparsers.add_parser("push", help="Push an image to the relay")
     push_parser.add_argument("image", help="Path to image file")
     push_parser.add_argument("--title", help="Optional title for the image")
+    push_parser.add_argument("--channel", help="Send to specific channel (channel_id prefix or device_name)")
 
     args = parser.parse_args()
 

@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 import httpx
 import qrcode
 
-from .config import save_config
+from .config import add_channel, new_config, save_config
 
 ENDPOINT = "https://relay.withiris.dev"
 DEFAULT_POLL_INTERVAL = 2
@@ -79,7 +79,7 @@ def poll_for_pubkey(
     raise SystemExit("Pairing timed out. Please try again.")
 
 
-def setup_interactive(endpoint: str | None = None) -> None:
+def setup_interactive(endpoint: str | None = None, existing_config: dict | None = None) -> None:
     """Create channel, display QR, poll for pubkey, save config."""
     endpoint = endpoint or ENDPOINT
     device_name = socket.gethostname()
@@ -105,12 +105,14 @@ def setup_interactive(endpoint: str | None = None) -> None:
     pubkey = poll_for_pubkey(endpoint, channel_id, push_token)
     print(" Done!")
 
-    config = {
+    channel = {
         "endpoint": endpoint,
         "channel_id": channel_id,
         "push_token": push_token,
         "pubkey": pubkey,
         "device_name": device_name,
     }
+    config = existing_config if existing_config is not None else new_config()
+    add_channel(config, channel)
     save_config(config)
     print(f"Configuration saved to ~/.config/iris/config.json")
