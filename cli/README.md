@@ -18,7 +18,7 @@ pip install withiris
 
 ## Setup
 
-1. Install the [Iris iOS app](https://apps.apple.com/app/iris/TODO) on your iPhone
+1. Install the [Iris iOS app](https://apps.apple.com/jp/app/iris-screenshot-relay/id6760296088) on your iPhone
 2. Run the setup command on your machine:
 
 ```
@@ -70,7 +70,7 @@ Each machine needs its own setup. Run `iris setup` on every machine you want to 
 ## Links
 
 - [GitHub](https://github.com/asonas/withiris)
-- [iOS App (App Store)](https://apps.apple.com/app/iris/TODO)
+- [iOS App (App Store)](https://apps.apple.com/jp/app/iris-screenshot-relay/id6760296088)
 
 ## License
 
