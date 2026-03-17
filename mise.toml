@@ -53,3 +53,58 @@ cd relay && npx --yes wrangler deploy --env dev --define "GIT_COMMIT:\"${COMMIT}
 [tasks."deploy:pages"]
 description = "Deploy landing pages to Cloudflare Pages"
 run = "cd pages && npx --yes wrangler pages deploy . --project-name=withiris --branch=main"
+
+[tasks."screenshot"]
+description = "Take screenshots of landing page (PC + mobile). Use -- --full for full page."
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+FULL_PAGE=false
+for arg in "$@"; do
+  case "$arg" in
+    --full) FULL_PAGE=true ;;
+  esac
+done
+
+URL="file://$MISE_PROJECT_ROOT/pages/index.html"
+OUT_DIR="$MISE_PROJECT_ROOT/.screenshots"
+mkdir -p "$OUT_DIR"
+
+FULL_FLAG=""
+if [ "$FULL_PAGE" = true ]; then
+  FULL_FLAG="--full-page"
+fi
+
+echo "==> Capturing PC (1280x800)..."
+npx --yes playwright screenshot --browser chromium \
+  --viewport-size "1280,800" $FULL_FLAG "$URL" "$OUT_DIR/pc.png"
+
+echo "==> Capturing Mobile (390x844)..."
+npx --yes playwright screenshot --browser chromium \
+  --viewport-size "390,844" $FULL_FLAG "$URL" "$OUT_DIR/mobile.png"
+
+echo "==> Screenshots saved to .screenshots/"
+ls -lh "$OUT_DIR"/*.png
+'''
+
+[tasks."screenshot:send"]
+description = "Send screenshots via iris push"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+OUT_DIR="$MISE_PROJECT_ROOT/.screenshots"
+
+if [ ! -d "$OUT_DIR" ] || [ -z "$(ls "$OUT_DIR"/*.png 2>/dev/null)" ]; then
+  echo "No screenshots found. Run 'mise run screenshot' first."
+  exit 1
+fi
+
+for f in "$OUT_DIR"/*.png; do
+  echo "==> Pushing $(basename "$f")..."
+  iris push "$f"
+done
+
+echo "==> Done!"
+'''
