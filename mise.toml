@@ -11,14 +11,14 @@ echo "==> Installing Pages dependencies..."
 cd pages && npm install --ignore-scripts && cd ..
 
 echo "==> Installing CLI..."
-cd cli && uv tool install -e . --force && cd ..
+cd cli && uv tool install --python 3.14.9 -e . --force && cd ..
 
 echo "==> Done!"
 '''
 
 [tasks."cli:install"]
 description = "Install iris CLI globally via uv tool"
-run = "cd cli && uv tool install -e . --force"
+run = "cd cli && uv tool install --python 3.14.9 -e . --force"
 
 [tasks."publish:cli"]
 description = "Build and publish CLI to PyPI"

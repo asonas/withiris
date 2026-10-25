@@ -9,6 +9,7 @@ authors = [
     { name = "asonas" },
 ]
 dependencies = [
+    "certifi>=2026.10.23",
     "cryptography>=44.0",
     "httpx>=0.28",
     "qrcode>=8.0",
